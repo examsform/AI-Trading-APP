@@ -26,8 +26,8 @@ st.sidebar.info("💡 सुरक्षा सलाह: अपनी कीज
 @st.cache_data(ttl=28800) # 8 घंटे के लिए टोकन लिस्ट कैश रहेगी
 def get_angel_tokens():
     try:
-        url = "https://angelbroking.com"
-        response = requests.get(url)
+        url = "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json"
+        response = requests.get(url, timeout=15)
         return pd.DataFrame(json.loads(response.text))
     except Exception as e:
         st.error(f"Token Master Download Failed: {e}")
@@ -88,10 +88,11 @@ if st.button("🔄 Fetch & Process Live AI Signals", type="primary"):
                     
                     # 1. गेट लाइव स्पॉट प्राइस
                     symbol_search = "Nifty 50" if index_choice == "NIFTY" else "Nifty Bank"
-                    index_row = tokens_df[(tokens_df['exch_seg'] == 'NSE') & (tokens_df['name'] == symbol_search)].iloc[0]
-                    index_token = index_row['token']
+                    index_row = tokens_df[(tokens_df['exch_seg'] == 'NSE') & (tokens_df['symbol'] == symbol_search)].iloc[0]
+                    index_token = str(index_row['token'])
+                    trading_symbol = str(index_row['symbol'])
                     
-                    ltp_response = smartApi.ltpData("NSE", symbol_search, index_token)
+                    ltp_response = smartApi.ltpData("NSE", trading_symbol, index_token)
                     spot_price = float(ltp_response['data']['ltp'])
                     
                     # 2. ऑप्शन चेन डेटा सिमुलेशन (टोकन मैपिंग के साथ लाइव एनवायरमेंट)
